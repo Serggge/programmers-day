@@ -38,7 +38,9 @@ public class DevDayServiceImpl implements DevDayService {
         Enumeration<String> headerNames = servletRequest.getHeaderNames();
         while (headerNames.hasMoreElements()) {
             String name = headerNames.nextElement();
-            headers.put(name, servletRequest.getHeader(name));
+            if (!name.equalsIgnoreCase("content-length") && !name.equalsIgnoreCase("host")) {
+                headers.put(name, servletRequest.getHeader(name));
+            }
         }
         return headers;
     }

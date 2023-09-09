@@ -28,10 +28,8 @@ public class SpringHttpClientImpl implements SpringHttpClient {
                 : HttpRequest.BodyPublishers.ofString(jsonBody, StandardCharsets.UTF_8);
         List<String> hdrsList = new ArrayList<>();
         headers.forEach((key, value) -> {
-            if (!"content-length".equalsIgnoreCase(key) && !"host".equalsIgnoreCase(key)) {
                 hdrsList.add(key);
                 hdrsList.add(value);
-            }
         });
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .uri(URI.create(serverUrl + "/" + path))
