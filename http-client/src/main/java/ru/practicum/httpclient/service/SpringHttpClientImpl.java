@@ -32,7 +32,7 @@ public class SpringHttpClientImpl implements SpringHttpClient {
                 hdrsList.add(value);
         });
         HttpRequest httpRequest = HttpRequest.newBuilder()
-                .uri(URI.create(serverUrl + "/" + path))
+                .uri(URI.create(serverUrl + path))
                 .method(method, body)
                 .headers(hdrsList.toArray(new String[0]))
                 .build();
