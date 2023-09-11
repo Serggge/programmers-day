@@ -1,7 +1,6 @@
 package ru.practicum.gateway.service;
 
 import org.springframework.http.ResponseEntity;
-import ru.practicum.gateway.dto.EncodedDto;
 import ru.practicum.gateway.dto.RegisterDto;
 import javax.servlet.http.HttpServletRequest;
 
