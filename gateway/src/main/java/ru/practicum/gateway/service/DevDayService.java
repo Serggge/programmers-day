@@ -7,4 +7,6 @@ import javax.servlet.http.HttpServletRequest;
 public interface DevDayService {
 
     ResponseEntity<String> sendRequest(RegisterDto dto, HttpServletRequest servletRequest);
+
+    ResponseEntity<String> sendRequestTask2(HttpServletRequest servletRequest);
 }
