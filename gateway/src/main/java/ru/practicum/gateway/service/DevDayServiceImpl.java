@@ -2,6 +2,9 @@ package ru.practicum.gateway.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +14,10 @@ import ru.practicum.gateway.dto.RegisterDto;
 import ru.practicum.httpclient.service.HttpClientFactory;
 import ru.practicum.httpclient.service.SpringHttpClient;
 import javax.servlet.http.HttpServletRequest;
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.InputStreamReader;
 import java.net.http.HttpResponse;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -43,47 +50,51 @@ public class DevDayServiceImpl implements DevDayService {
     @Override
     @SneakyThrows
     public ResponseEntity<String> sendRequestTask2(HttpServletRequest servletRequest) {
-        HttpResponse<String> response = httpClient.send(servletRequest.getServletPath(), servletRequest.getMethod(), null, toHeaders(servletRequest));
-        String htmlBody = response.body();
-        Pattern pattern = Pattern.compile("<code id=\"message.*/code>");
-        Matcher matcher = pattern.matcher(htmlBody);
-        String groupg = "";
-        if (matcher.find()) {
-            groupg = matcher.group(0);
-            groupg = groupg.replace("&quot;", "");
-            pattern = Pattern.compile("\\{encoded.*\\}");
-            matcher = pattern.matcher(groupg);
-            if (matcher.find()) {
-                groupg = matcher.group(0);
+        //HttpResponse<String> response = httpClient.send(servletRequest.getServletPath(), servletRequest.getMethod(), null, toHeaders(servletRequest));
+        String html = "";
+        try (BufferedReader buff = new BufferedReader(new FileReader("/home/serggge/Documents/task2.html"))) {
+            StringBuilder sb = new StringBuilder();
+            while (buff.ready()) {
+                sb.append(buff.readLine());
             }
+            html = sb.toString();
         }
-        String encodedLine = groupg.substring(groupg.indexOf(" ") + 1, groupg.indexOf(","));
-        int offset = Integer.parseInt(groupg.substring(groupg.lastIndexOf(" ") + 1, groupg.lastIndexOf("}")));
-        char[] charArray = encodedLine.toCharArray();
-        for (int i = 0; i < charArray.length; i++) {
-            char c = charArray[i];
-            if (c != ' ') {
-                char decodedChar = (c - offset) >= 65 ? (char) (c - offset) : (char) (90 - (c - 65));
-                charArray[i] = decodedChar;
-            }
-        }
-        String result = String.valueOf(charArray);
-        Map<String, String> header = new HashMap<>();
-        header.put("AUTH_TOKEN", token);
-        String json = new ObjectMapper().writeValueAsString(new AnswerDto(result));
-        httpClient.send(servletRequest.getServletPath(), HttpMethod.POST.name(), json, header);
-        return ResponseEntity.ok(result);
+
+        //String html = response.body();
+
+        //System.out.println(html);
+        Document document = Jsoup.parse(html);
+        Elements elements = document.select("code");
+        System.out.println(elements.attr("code"));
+        return ResponseEntity.ok("");
+//        String encodedLine = groupg.substring(groupg.indexOf(" ") + 1, groupg.indexOf(","));
+//        int offset = Integer.parseInt(groupg.substring(groupg.lastIndexOf(" ") + 1, groupg.lastIndexOf("}")));
+//        char[] charArray = encodedLine.toCharArray();
+//        for (int i = 0; i < charArray.length; i++) {
+//            char c = charArray[i];
+//            if (c != ' ') {
+//                char decodedChar = (c - offset) >= 65 ? (char) (c - offset) : (char) (90 - (c - 65));
+//                charArray[i] = decodedChar;
+//            }
+//        }
+//        String result = String.valueOf(charArray);
+//        Map<String, String> header = new HashMap<>();
+//        header.put("AUTH_TOKEN", token);
+//        String json = new ObjectMapper().writeValueAsString(new AnswerDto(result));
+//        httpClient.send(servletRequest.getServletPath(), HttpMethod.POST.name(), json, header);
+//        return ResponseEntity.ok(result);
     }
 
     private Map<String, String> toHeaders(HttpServletRequest servletRequest) {
-        Map<String, String> headers = new HashMap<>();
-        Enumeration<String> headerNames = servletRequest.getHeaderNames();
-        while (headerNames.hasMoreElements()) {
-            String name = headerNames.nextElement();
-            if (!name.equalsIgnoreCase("content-length") && !name.equalsIgnoreCase("host")) {
-                headers.put(name, servletRequest.getHeader(name));
-            }
+        Enumeration<String> headersNames = servletRequest.getHeaderNames();
+        while ((headersNames.hasMoreElements())) {
+            System.out.println(headersNames.nextElement());
         }
+        Map<String, String> headers = new HashMap<>();
+        headers.put("AUTH_TOKEN", token);
+        headers.put("Content-Type", "application/json");
+        headers.put("Accept", "*/*");
+        headers.put("user-agent", servletRequest.getHeader("user-agent"));
         return headers;
     }
 }
